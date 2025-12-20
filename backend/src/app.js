@@ -2,12 +2,15 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
-import { errorMiddleware } from "./middlewares/error.middleware.js";
-import { authMiddleware } from "./middlewares/auth.middleware.js";
+
 import authRoutes from "./routes/auth.routes.js";
 import workspaceRoutes from "./routes/workspace.routes.js";
 import projectRoutes from "./routes/project.routes.js";
 import taskRoutes from "./routes/task.routes.js";
+import { errorMiddleware } from "./middlewares/error.middleware.js";
+
+import swaggerUi from "swagger-ui-express";
+import YAML from "yamljs";
 
 const app = express();
 
@@ -25,11 +28,16 @@ app.use(express.json());
 // logging
 app.use(morgan("dev"));
 
+// swagger docs
+const swaggerDocument = YAML.load("./docs/openapi.yaml");
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
 // health check
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok" });
 });
 
+// routes
 app.use("/api/auth", authRoutes);
 app.use("/api/workspaces", workspaceRoutes);
 app.use("/api/projects", projectRoutes);
@@ -48,7 +56,7 @@ app.use("/api/tasks", taskRoutes);
 //   });
 // });
 
-
+// error handler (must be last)
 app.use(errorMiddleware);
 
 export default app;
