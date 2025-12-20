@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
+import { errorMiddleware } from "./middlewares/error.middleware.js";
 
 const app = express();
 
@@ -19,5 +20,11 @@ app.use(morgan("dev"));
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok" });
 });
+
+// app.get("/error-test", () => {
+//   throw new Error("Test error");
+// });
+
+app.use(errorMiddleware);
 
 export default app;
