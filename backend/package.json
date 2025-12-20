@@ -8,6 +8,7 @@
     "dev": "nodemon src/server.js",
     "start": "node src/server.js"
   },
+  "type":"module",
   "author": "Ayush Gupta",
   "license": "ISC",
   "dependencies": {
