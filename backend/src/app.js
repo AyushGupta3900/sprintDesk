@@ -3,6 +3,7 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import { errorMiddleware } from "./middlewares/error.middleware.js";
+import { authMiddleware } from "./middlewares/auth.middleware.js";
 
 const app = express();
 
@@ -21,10 +22,19 @@ app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok" });
 });
 
-// checking working of error
+// testing error middleware 
 // app.get("/error-test", () => {
 //   throw new Error("Test error");
 // });
+
+// testing auth middleware 
+app.get("/protected", authMiddleware, (req, res) => {
+  res.json({
+    message: "Access granted",
+    user: req.user,
+  });
+});
+
 
 app.use(errorMiddleware);
 
