@@ -5,6 +5,9 @@ import morgan from "morgan";
 import { errorMiddleware } from "./middlewares/error.middleware.js";
 import { authMiddleware } from "./middlewares/auth.middleware.js";
 import authRoutes from "./routes/auth.routes.js";
+import workspaceRoutes from "./routes/workspace.routes.js";
+import projectRoutes from "./routes/project.routes.js";
+import taskRoutes from "./routes/task.routes.js";
 
 const app = express();
 
@@ -24,6 +27,9 @@ app.get("/health", (req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/workspaces", workspaceRoutes);
+app.use("/api/projects", projectRoutes);
+app.use("/api/tasks", taskRoutes);
 
 // testing error middleware 
 // app.get("/error-test", () => {
