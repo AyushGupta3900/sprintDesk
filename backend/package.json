@@ -4,11 +4,11 @@
   "description": "This is the backend of sprintDesk app",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "NODE_ENV=test node --experimental-vm-modules node_modules/.bin/jest --runInBand",
     "dev": "nodemon src/server.js",
     "start": "node src/server.js"
   },
-  "type":"module",
+  "type": "module",
   "author": "Ayush Gupta",
   "license": "ISC",
   "dependencies": {
@@ -25,6 +25,9 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.11"
+    "jest": "^30.2.0",
+    "mongodb-memory-server": "^11.0.0",
+    "nodemon": "^3.1.11",
+    "supertest": "^7.1.4"
   }
 }

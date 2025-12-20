@@ -2,6 +2,7 @@ import Project from "../models/project.model.js";
 import { ApiError } from "../utils/api-error.js";
 import { HTTPSTATUS } from "../constants/http-status.js";
 import { getCache, setCache, deleteCache } from "../utils/cache.js";
+import { getIO } from "../sockets/index.js";
 
 export async function createProject({
   name,
@@ -26,6 +27,7 @@ export async function createProject({
   });
 
   await deleteCache(`workspace:${workspaceId}:projects`);
+  getIO().to(`workspace:${workspaceId}`).emit("project:created", project);
 
   return project;
 }

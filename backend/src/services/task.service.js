@@ -2,6 +2,7 @@ import Task from "../models/task.model.js";
 import { ApiError } from "../utils/api-error.js";
 import { HTTPSTATUS } from "../constants/http-status.js";
 import { getCache, setCache, deleteCache } from "../utils/cache.js";
+import { getIO } from "../sockets/index.js";
 
 /**
  * Create a task
@@ -37,6 +38,10 @@ export async function createTask({
   await deleteCache(
     `workspace:${workspaceId}:project:${projectId}:tasks`
   );
+
+  getIO()
+  .to(`workspace:${workspaceId}`)
+  .emit("task:created", task);
 
   return task;
 }

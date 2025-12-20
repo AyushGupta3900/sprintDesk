@@ -37,12 +37,12 @@ app.use("/api/tasks", taskRoutes);
 // });
 
 // testing auth middleware 
-app.get("/protected", authMiddleware, (req, res) => {
-  res.json({
-    message: "Access granted",
-    user: req.user,
-  });
-});
+// app.get("/protected", authMiddleware, (req, res) => {
+//   res.json({
+//     message: "Access granted",
+//     user: req.user,
+//   });
+// });
 
 
 app.use(errorMiddleware);
