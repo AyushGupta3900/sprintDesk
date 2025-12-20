@@ -21,9 +21,6 @@ tags:
   - name: Tasks
     description: Task management
 
-security:
-  - bearerAuth: []
-
 components:
   securitySchemes:
     bearerAuth:
@@ -85,6 +82,9 @@ components:
           type: string
         message:
           type: string
+
+security:
+  - bearerAuth: []
 
 paths:
   /api/auth/register:
