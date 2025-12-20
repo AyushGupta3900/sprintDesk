@@ -30,6 +30,7 @@ app.use(morgan("dev"));
 
 // swagger docs
 const swaggerDocument = YAML.load("./docs/openapi.yaml");
+console.log("Swagger document:", swaggerDocument);
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // health check
