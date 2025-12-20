@@ -12,7 +12,11 @@ import taskRoutes from "./routes/task.routes.js";
 const app = express();
 
 // security
-app.use(helmet());
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false,
+  })
+);
 app.use(cors());
 
 // body parsing
