@@ -35,3 +35,9 @@ export const login = asyncHandler(async (req, res) => {
 
   res.status(HTTPSTATUS.OK).json(result);
 });
+
+export const getMe = async (req, res) => {
+  res.status(200).json({
+    user: req.user,
+  });
+};
