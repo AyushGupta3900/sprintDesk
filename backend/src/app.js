@@ -21,6 +21,7 @@ app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok" });
 });
 
+// checking working of error
 // app.get("/error-test", () => {
 //   throw new Error("Test error");
 // });
