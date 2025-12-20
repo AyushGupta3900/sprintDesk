@@ -4,6 +4,7 @@ import helmet from "helmet";
 import morgan from "morgan";
 import { errorMiddleware } from "./middlewares/error.middleware.js";
 import { authMiddleware } from "./middlewares/auth.middleware.js";
+import authRoutes from "./routes/auth.routes.js";
 
 const app = express();
 
@@ -21,6 +22,8 @@ app.use(morgan("dev"));
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok" });
 });
+
+app.use("/api/auth", authRoutes);
 
 // testing error middleware 
 // app.get("/error-test", () => {
