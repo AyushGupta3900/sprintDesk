@@ -2,65 +2,131 @@ import Task from "../models/task.model.js";
 import { ApiError } from "../utils/api-error.js";
 import { HTTPSTATUS } from "../constants/http-status.js";
 import { getCache, setCache, deleteCache } from "../utils/cache.js";
-import { getIO } from "../sockets/index.js";
 
 /**
- * Create a task
+ * CREATE TASK
  */
-export async function createTask({
+export const createTaskService = async ({
   title,
   description,
-  projectId,
-  workspaceId,
-  userId,
   priority,
   assignedTo,
   dueDate,
-}) {
-  if (!title || !projectId) {
+  projectId,
+  workspaceId,
+  userId,
+}) => {
+  if (!title || !projectId || !workspaceId) {
     throw new ApiError(
       HTTPSTATUS.BAD_REQUEST,
-      "Title and project are required"
+      "Title, projectId and workspaceId are required"
     );
   }
 
   const task = await Task.create({
     title,
     description,
-    project: projectId,
-    workspace: workspaceId,
     priority,
     assignedTo,
     dueDate,
+    project: projectId,
+    workspace: workspaceId,
     createdBy: userId,
   });
 
-  await deleteCache(
-    `workspace:${workspaceId}:project:${projectId}:tasks`
-  );
-
-  getIO()
-  .to(`workspace:${workspaceId}`)
-  .emit("task:created", task);
+  await deleteCache(`workspace:${workspaceId}:tasks`);
 
   return task;
-}
-
+};
 
 /**
- * Get tasks by project
+ * UPDATE TASK
  */
-export async function getTasksByProject(projectId, workspaceId) {
-  const cacheKey = `workspace:${workspaceId}:project:${projectId}:tasks`;
+export const updateTaskService = async ({
+  taskId,
+  projectId,
+  workspaceId,
+  updates,
+}) => {
+  const task = await Task.findOne({
+    _id: taskId,
+    project: projectId,
+    workspace: workspaceId,
+  });
+
+  if (!task) {
+    throw new ApiError(
+      HTTPSTATUS.NOT_FOUND,
+      "Task not found"
+    );
+  }
+
+  Object.assign(task, updates);
+  await task.save();
+
+  await deleteCache(`workspace:${workspaceId}:tasks`);
+
+  return task;
+};
+
+/**
+ * DELETE TASK
+ */
+export const deleteTaskService = async ({
+  taskId,
+  workspaceId,
+}) => {
+  const task = await Task.findOneAndDelete({
+    _id: taskId,
+    workspace: workspaceId,
+  });
+
+  if (!task) {
+    throw new ApiError(
+      HTTPSTATUS.NOT_FOUND,
+      "Task not found"
+    );
+  }
+
+  await deleteCache(`workspace:${workspaceId}:tasks`);
+};
+
+/**
+ * GET ALL TASKS (WORKSPACE)
+ */
+export const getAllTasksService = async (workspaceId) => {
+  const cacheKey = `workspace:${workspaceId}:tasks`;
 
   const cached = await getCache(cacheKey);
   if (cached) return cached;
 
-  const tasks = await Task.find({
-    project: projectId,
-    workspace: workspaceId,
-  }).sort({ createdAt: -1 });
+  const tasks = await Task.find({ workspace: workspaceId })
+    .sort({ createdAt: -1 });
 
   await setCache(cacheKey, tasks);
   return tasks;
-}
+};
+
+/**
+ * GET TASK BY ID
+ */
+export const getTaskByIdService = async ({
+  taskId,
+  projectId,
+  workspaceId,
+}) => {
+  const task = await Task.findOne({
+    _id: taskId,
+    project: projectId,
+    workspace: workspaceId,
+  });
+
+  if (!task) {
+    throw new ApiError(
+      HTTPSTATUS.NOT_FOUND,
+      "Task not found"
+    );
+  }
+
+  return task;
+};

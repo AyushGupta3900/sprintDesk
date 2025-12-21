@@ -1,47 +1,86 @@
-import { asyncHandler } from "../utils/async-handler.js";
-import {
-  createTask,
-  getTasksByProject,
-} from "../services/task.service.js";
 import { HTTPSTATUS } from "../constants/http-status.js";
+import {
+  createTaskService,
+  deleteTaskService,
+  getAllTasksService,
+  getTaskByIdService,
+  updateTaskService,
+} from "../services/task.service.js";
 
 /**
- * POST /api/tasks
+ * CREATE TASK
  */
-export const create = asyncHandler(async (req, res) => {
-  const {
-    title,
-    description,
-    projectId,
-    priority,
-    assignedTo,
-    dueDate,
-  } = req.body;
+export const createTaskController = async (req, res) => {
+  const { title, description, priority, assignedTo, dueDate } = req.body;
+  const { projectId, workspaceId } = req.params;
 
-  const task = await createTask({
+  const task = await createTaskService({
     title,
     description,
-    projectId,
-    workspaceId: req.user.workspaceId,
-    userId: req.user.id,
     priority,
     assignedTo,
     dueDate,
+    projectId,
+    workspaceId,
+    userId: req.user._id,
   });
 
   res.status(HTTPSTATUS.CREATED).json(task);
-});
+};
 
 /**
- * GET /api/tasks/:projectId
+ * UPDATE TASK
  */
-export const listByProject = asyncHandler(async (req, res) => {
-  const { projectId } = req.params;
+export const updateTaskController = async (req, res) => {
+  const { id, projectId, workspaceId } = req.params;
+  const updates = req.body;
 
-  const tasks = await getTasksByProject(
+  const task = await updateTaskService({
+    taskId: id,
     projectId,
-    req.user.workspaceId
-  );
+    workspaceId,
+    updates,
+  });
+
+  res.status(HTTPSTATUS.OK).json(task);
+};
+
+/**
+ * DELETE TASK
+ */
+export const deleteTaskController = async (req, res) => {
+  const { id, workspaceId } = req.params;
+
+  await deleteTaskService({
+    taskId: id,
+    workspaceId,
+  });
+
+  res.status(HTTPSTATUS.NO_CONTENT).send();
+};
+
+/**
+ * GET ALL TASKS (WORKSPACE)
+ */
+export const getAllTasksController = async (req, res) => {
+  const { workspaceId } = req.params;
+
+  const tasks = await getAllTasksService(workspaceId);
 
   res.status(HTTPSTATUS.OK).json(tasks);
-});
+};
+
+/**
+ * GET TASK BY ID
+ */
+export const getTaskByIdController = async (req, res) => {
+  const { id, projectId, workspaceId } = req.params;
+
+  const task = await getTaskByIdService({
+    taskId: id,
+    projectId,
+    workspaceId,
+  });
+
+  res.status(HTTPSTATUS.OK).json(task);
+};

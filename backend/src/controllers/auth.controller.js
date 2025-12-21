@@ -36,8 +36,21 @@ export const login = asyncHandler(async (req, res) => {
   res.status(HTTPSTATUS.OK).json(result);
 });
 
-export const getMe = async (req, res) => {
-  res.status(200).json({
-    user: req.user,
+export const getMe = asyncHandler(async (req, res) => {
+  if (!req.user) {
+    throw new ApiError(
+      HTTPSTATUS.UNAUTHORIZED,
+      "User not authenticated",
+      ErrorCodeEnum.AUTH_UNAUTHORIZED_ACCESS
+    );
+  }
+
+  res.status(HTTPSTATUS.OK).json({
+    user: {
+      _id: req.user._id,
+      email: req.user.email,
+      name: req.user.name,
+      currentWorkspace: req.user.currentWorkspace,
+    },
   });
-};
+});

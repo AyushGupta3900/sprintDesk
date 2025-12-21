@@ -2,10 +2,10 @@ openapi: 3.0.0
 
 info:
   title: SprintDesk API
+  version: 1.0.0
   description: |
     SprintDesk is a multi-tenant SaaS backend for project and task management.
-    All APIs are workspace-scoped and secured via JWT.
-  version: 1.0.0
+    All APIs are secured via JWT and scoped to a workspace.
 
 servers:
   - url: http://localhost:5000
@@ -13,13 +13,9 @@ servers:
 
 tags:
   - name: Auth
-    description: Authentication & authorization
   - name: Workspaces
-    description: Workspace (tenant) management
   - name: Projects
-    description: Project management
   - name: Tasks
-    description: Task management
 
 components:
   securitySchemes:
@@ -48,7 +44,7 @@ components:
           type: string
         description:
           type: string
-        inviteCode:
+        owner:
           type: string
 
     Project:
@@ -74,6 +70,9 @@ components:
           type: string
         priority:
           type: string
+        dueDate:
+          type: string
+          format: date
 
     ErrorResponse:
       type: object
@@ -87,16 +86,20 @@ security:
   - bearerAuth: []
 
 paths:
+
+  # =======================
+  # AUTH
+  # =======================
+
   /api/auth/register:
     post:
       tags: [Auth]
-      summary: Register a new user
+      summary: Register user
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
               required: [email, password]
               properties:
                 name:
@@ -118,7 +121,6 @@ paths:
         content:
           application/json:
             schema:
-              type: object
               required: [email, password]
               properties:
                 email:
@@ -129,16 +131,38 @@ paths:
         200:
           description: Login successful
 
+  /api/auth/me:
+    get:
+      tags: [Auth]
+      summary: Get logged-in user
+      responses:
+        200:
+          description: User info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  # =======================
+  # WORKSPACES
+  # =======================
+
   /api/workspaces:
+    get:
+      tags: [Workspaces]
+      summary: Get all workspaces for user
+      responses:
+        200:
+          description: List of workspaces
+
     post:
       tags: [Workspaces]
-      summary: Create a workspace
+      summary: Create workspace
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
               required: [name]
               properties:
                 name:
@@ -153,50 +177,217 @@ paths:
               schema:
                 $ref: "#/components/schemas/Workspace"
 
-  /api/projects:
+  /api/workspaces/current:
+    get:
+      tags: [Workspaces]
+      summary: Get current active workspace
+      responses:
+        200:
+          description: Current workspace
+
+  /api/workspaces/{workspaceId}:
+    get:
+      tags: [Workspaces]
+      summary: Get workspace details
+      parameters:
+        - in: path
+          name: workspaceId
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Workspace detail with members & roles
+
+    put:
+      tags: [Workspaces]
+      summary: Update workspace
+      parameters:
+        - in: path
+          name: workspaceId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+      responses:
+        200:
+          description: Workspace updated
+
+    delete:
+      tags: [Workspaces]
+      summary: Delete workspace
+      parameters:
+        - in: path
+          name: workspaceId
+          required: true
+          schema:
+            type: string
+      responses:
+        204:
+          description: Workspace deleted
+
+  /api/workspaces/{workspaceId}/analytics:
+    get:
+      tags: [Workspaces]
+      summary: Workspace analytics
+      parameters:
+        - in: path
+          name: workspaceId
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Analytics summary
+
+  /api/workspaces/{workspaceId}/invite:
     post:
-      tags: [Projects]
-      summary: Create project
+      tags: [Workspaces]
+      summary: Invite member
+      parameters:
+        - in: path
+          name: workspaceId
+          required: true
+          schema:
+            type: string
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
+              required: [email, role]
+              properties:
+                email:
+                  type: string
+                role:
+                  type: string
+      responses:
+        201:
+          description: Member invited
+
+  /api/workspaces/{workspaceId}/members:
+    get:
+      tags: [Workspaces]
+      summary: Get workspace members
+      parameters:
+        - in: path
+          name: workspaceId
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Members list
+
+  /api/workspaces/{workspaceId}/members/{memberId}:
+    patch:
+      tags: [Workspaces]
+      summary: Update member role
+      parameters:
+        - in: path
+          name: workspaceId
+          required: true
+        - in: path
+          name: memberId
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                role:
+                  type: string
+      responses:
+        200:
+          description: Member updated
+
+    delete:
+      tags: [Workspaces]
+      summary: Remove member
+      parameters:
+        - in: path
+          name: workspaceId
+          required: true
+        - in: path
+          name: memberId
+          required: true
+      responses:
+        204:
+          description: Member removed
+
+  # =======================
+  # PROJECTS
+  # =======================
+
+  /api/projects/workspace/{workspaceId}/create:
+    post:
+      tags: [Projects]
+      summary: Create project
+      parameters:
+        - in: path
+          name: workspaceId
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
               required: [name]
               properties:
                 name:
                   type: string
                 emoji:
                   type: string
-                description:
-                  type: string
       responses:
         201:
           description: Project created
 
+  /api/projects/workspace/{workspaceId}/all:
     get:
       tags: [Projects]
-      summary: List projects
+      summary: Get all projects
+      parameters:
+        - in: path
+          name: workspaceId
+          required: true
       responses:
         200:
           description: List of projects
 
-  /api/tasks:
+  # =======================
+  # TASKS
+  # =======================
+
+  /api/tasks/project/{projectId}/workspace/{workspaceId}/create:
     post:
       tags: [Tasks]
       summary: Create task
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+        - in: path
+          name: workspaceId
+          required: true
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              required: [title, projectId]
+              required: [title]
               properties:
                 title:
                   type: string
-                projectId:
+                description:
                   type: string
                 priority:
                   type: string
@@ -206,17 +397,3 @@ paths:
       responses:
         201:
           description: Task created
-
-  /api/tasks/{projectId}:
-    get:
-      tags: [Tasks]
-      summary: List tasks by project
-      parameters:
-        - in: path
-          name: projectId
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: List of tasks

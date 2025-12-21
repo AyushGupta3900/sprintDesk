@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { Roles, Permissions } from "../enums/role.enum.js";
+import { RolePermissions } from "../utils/role-permission.js";
 
 const { Schema } = mongoose;
 
@@ -13,7 +14,9 @@ const roleSchema = new Schema(
     permissions: {
       type: [String],
       enum: Object.values(Permissions),
-      required: true,
+      default() {
+        return RolePermissions[this.name] || [];
+      },
     },
     workspaceId: {
       type: Schema.Types.ObjectId,
