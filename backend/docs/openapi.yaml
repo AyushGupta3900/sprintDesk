@@ -138,10 +138,6 @@ paths:
       responses:
         200:
           description: User info
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/User"
 
   # =======================
   # WORKSPACES
@@ -172,10 +168,6 @@ paths:
       responses:
         201:
           description: Workspace created
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Workspace"
 
   /api/workspaces/current:
     get:
@@ -188,7 +180,7 @@ paths:
   /api/workspaces/{workspaceId}:
     get:
       tags: [Workspaces]
-      summary: Get workspace details
+      summary: Get workspace details (members + roles)
       parameters:
         - in: path
           name: workspaceId
@@ -197,7 +189,7 @@ paths:
             type: string
       responses:
         200:
-          description: Workspace detail with members & roles
+          description: Workspace details
 
     put:
       tags: [Workspaces]
@@ -206,8 +198,6 @@ paths:
         - in: path
           name: workspaceId
           required: true
-          schema:
-            type: string
       requestBody:
         content:
           application/json:
@@ -228,8 +218,6 @@ paths:
         - in: path
           name: workspaceId
           required: true
-          schema:
-            type: string
       responses:
         204:
           description: Workspace deleted
@@ -242,8 +230,6 @@ paths:
         - in: path
           name: workspaceId
           required: true
-          schema:
-            type: string
       responses:
         200:
           description: Analytics summary
@@ -256,8 +242,6 @@ paths:
         - in: path
           name: workspaceId
           required: true
-          schema:
-            type: string
       requestBody:
         required: true
         content:
@@ -281,8 +265,6 @@ paths:
         - in: path
           name: workspaceId
           required: true
-          schema:
-            type: string
       responses:
         200:
           description: Members list
@@ -299,7 +281,6 @@ paths:
           name: memberId
           required: true
       requestBody:
-        required: true
         content:
           application/json:
             schema:
@@ -347,6 +328,8 @@ paths:
                   type: string
                 emoji:
                   type: string
+                description:
+                  type: string
       responses:
         201:
           description: Project created
@@ -354,14 +337,85 @@ paths:
   /api/projects/workspace/{workspaceId}/all:
     get:
       tags: [Projects]
-      summary: Get all projects
+      summary: Get all projects in workspace
       parameters:
         - in: path
           name: workspaceId
           required: true
       responses:
         200:
-          description: List of projects
+          description: Projects list
+
+  /api/projects/{id}/workspace/{workspaceId}:
+    get:
+      tags: [Projects]
+      summary: Get project by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+        - in: path
+          name: workspaceId
+          required: true
+      responses:
+        200:
+          description: Project details
+
+  /api/projects/{id}/workspace/{workspaceId}/update:
+    put:
+      tags: [Projects]
+      summary: Update project
+      parameters:
+        - in: path
+          name: id
+          required: true
+        - in: path
+          name: workspaceId
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                name:
+                  type: string
+                emoji:
+                  type: string
+                description:
+                  type: string
+      responses:
+        200:
+          description: Project updated
+
+  /api/projects/{id}/workspace/{workspaceId}/delete:
+    delete:
+      tags: [Projects]
+      summary: Delete project
+      parameters:
+        - in: path
+          name: id
+          required: true
+        - in: path
+          name: workspaceId
+          required: true
+      responses:
+        204:
+          description: Project deleted
+
+  /api/projects/{id}/workspace/{workspaceId}/analytics:
+    get:
+      tags: [Projects]
+      summary: Project analytics
+      parameters:
+        - in: path
+          name: id
+          required: true
+        - in: path
+          name: workspaceId
+          required: true
+      responses:
+        200:
+          description: Project analytics
 
   # =======================
   # TASKS
@@ -394,6 +448,82 @@ paths:
                 dueDate:
                   type: string
                   format: date
+                assignedTo:
+                  type: string
       responses:
         201:
           description: Task created
+
+  /api/tasks/workspace/{workspaceId}/all:
+    get:
+      tags: [Tasks]
+      summary: Get all tasks in workspace
+      parameters:
+        - in: path
+          name: workspaceId
+          required: true
+      responses:
+        200:
+          description: Tasks list
+
+  /api/tasks/{id}/project/{projectId}/workspace/{workspaceId}:
+    get:
+      tags: [Tasks]
+      summary: Get task by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+        - in: path
+          name: projectId
+          required: true
+        - in: path
+          name: workspaceId
+          required: true
+      responses:
+        200:
+          description: Task details
+
+  /api/tasks/{id}/project/{projectId}/workspace/{workspaceId}/update:
+    put:
+      tags: [Tasks]
+      summary: Update task
+      parameters:
+        - in: path
+          name: id
+          required: true
+        - in: path
+          name: projectId
+          required: true
+        - in: path
+          name: workspaceId
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                title:
+                  type: string
+                status:
+                  type: string
+                priority:
+                  type: string
+      responses:
+        200:
+          description: Task updated
+
+  /api/tasks/{id}/workspace/{workspaceId}/delete:
+    delete:
+      tags: [Tasks]
+      summary: Delete task
+      parameters:
+        - in: path
+          name: id
+          required: true
+        - in: path
+          name: workspaceId
+          required: true
+      responses:
+        204:
+          description: Task deleted
