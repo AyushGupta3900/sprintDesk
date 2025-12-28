@@ -1,10 +1,19 @@
 import { baseApi } from "../../api/baseApi";
-import { setAuthenticated, setAuthInitialized, logout} from "./auth.slice";
+import {
+  setUser,
+  setAuthenticated,
+  setAuthInitialized,
+  logout,
+} from "./auth.slice";
+import { clearWorkspace } from "../workspaces/workspace.slice";
+import {
+  connectSocket,
+  disconnectSocket,
+} from "../../sockets/socket";
 
 export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
 
-    // REGISTER
     registerUser: builder.mutation({
       query: (data) => ({
         url: "/api/auth/register",
@@ -13,7 +22,6 @@ export const authApi = baseApi.injectEndpoints({
       }),
     }),
 
-    // LOGIN
     loginUser: builder.mutation({
       query: (data) => ({
         url: "/api/auth/login",
@@ -21,21 +29,36 @@ export const authApi = baseApi.injectEndpoints({
         body: data,
       }),
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
-        const { data } = await queryFulfilled;
-        localStorage.setItem("token", data.token);
-        dispatch(setAuthenticated(true));
+        try {
+          const { data } = await queryFulfilled;
+
+          localStorage.setItem("token", data.token);
+
+          dispatch(setAuthenticated(true));
+
+          connectSocket(data.token);
+        } catch {
+        }
       },
     }),
 
-    // GET LOGGED IN USER
     getAuthUser: builder.query({
       query: () => "/api/auth/me",
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
         try {
-          await queryFulfilled;
-          dispatch(setAuthenticated(true));
+          const { data } = await queryFulfilled;
+
+          dispatch(setUser(data));
+
+          const token = localStorage.getItem("token");
+          if (token) {
+            connectSocket(token);
+          }
         } catch {
-          dispatch(setAuthenticated(false));
+          disconnectSocket();
+
+          dispatch(logout());
+          dispatch(clearWorkspace());
         } finally {
           dispatch(setAuthInitialized());
         }
@@ -43,18 +66,22 @@ export const authApi = baseApi.injectEndpoints({
       providesTags: ["User"],
     }),
 
-    // LOGOUT
     logoutUser: builder.mutation({
       query: () => ({
         url: "/api/auth/logout",
         method: "POST",
       }),
       async onQueryStarted(_, { dispatch }) {
+        disconnectSocket();
+
         localStorage.removeItem("token");
+
         dispatch(logout());
+        dispatch(clearWorkspace());
+
+        dispatch(baseApi.util.resetApiState());
       },
     }),
-
   }),
 });
 

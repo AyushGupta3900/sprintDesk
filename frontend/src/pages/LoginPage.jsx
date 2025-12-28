@@ -8,7 +8,7 @@ export default function LoginPage() {
     (state) => state.auth
   );
   if (isAuthenticated) {
-    return <Navigate to="/home" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return <Login />;
