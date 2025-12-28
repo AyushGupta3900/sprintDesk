@@ -5,9 +5,7 @@ let io;
 
 export function initSocket(server) {
   io = new Server(server, {
-    cors: {
-      origin: "*",
-    },
+    cors: { origin: "*" },
   });
 
   io.use((socket, next) => {
@@ -21,23 +19,23 @@ export function initSocket(server) {
 
       socket.user = {
         id: decoded.userId,
-        workspaceId: decoded.currentWorkspaceId,
+        workspaceId: decoded.currentWorkspaceId || null,
       };
 
       next();
-    } catch (err) {
+    } catch {
       next(new Error("Authentication error"));
     }
   });
 
   io.on("connection", (socket) => {
-    const workspaceRoom = `workspace:${socket.user.workspaceId}`;
+    const workspaceId = socket.user.workspaceId;
 
-    socket.join(workspaceRoom);
-
-    console.log(
-      `🔌 User ${socket.user.id} connected to ${workspaceRoom}`
-    );
+    if (workspaceId) {
+      const room = `workspace:${workspaceId}`;
+      socket.join(room);
+      console.log(`🔌 User ${socket.user.id} joined ${room}`);
+    }
 
     socket.on("disconnect", () => {
       console.log(`User ${socket.user.id} disconnected`);

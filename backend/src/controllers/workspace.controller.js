@@ -1,3 +1,6 @@
+import { asyncHandler } from "../utils/async-handler.js";
+import { HTTPSTATUS } from "../constants/http-status.js";
+
 import {
   createWorkspaceService,
   getUserWorkspacesService,
@@ -9,12 +12,13 @@ import {
   updateMemberRoleService,
   removeMemberService,
   getWorkspaceByIdService,
-  getWorkspaceAnalyticsService
+  getWorkspaceAnalyticsService,
 } from "../services/workspace.service.js";
 
-import { HTTPSTATUS } from "../constants/http-status.js";
-
-export const createWorkspace = async (req, res) => {
+/**
+ * CREATE WORKSPACE
+ */
+export const createWorkspace = asyncHandler(async (req, res) => {
   const workspace = await createWorkspaceService({
     name: req.body.name,
     description: req.body.description,
@@ -22,19 +26,28 @@ export const createWorkspace = async (req, res) => {
   });
 
   res.status(HTTPSTATUS.CREATED).json(workspace);
-};
+});
 
-export const getMyWorkspaces = async (req, res) => {
+/**
+ * GET MY WORKSPACES
+ */
+export const getMyWorkspaces = asyncHandler(async (req, res) => {
   const workspaces = await getUserWorkspacesService(req.user._id);
   res.status(HTTPSTATUS.OK).json(workspaces);
-};
+});
 
-export const getCurrentWorkspace = async (req, res) => {
+/**
+ * GET CURRENT WORKSPACE
+ */
+export const getCurrentWorkspace = asyncHandler(async (req, res) => {
   const workspace = await getCurrentWorkspaceService(req.user);
   res.status(HTTPSTATUS.OK).json(workspace);
-};
+});
 
-export const updateWorkspace = async (req, res) => {
+/**
+ * UPDATE WORKSPACE
+ */
+export const updateWorkspace = asyncHandler(async (req, res) => {
   const workspace = await updateWorkspaceService({
     workspaceId: req.params.workspaceId,
     name: req.body.name,
@@ -42,14 +55,20 @@ export const updateWorkspace = async (req, res) => {
   });
 
   res.status(HTTPSTATUS.OK).json(workspace);
-};
+});
 
-export const deleteWorkspace = async (req, res) => {
+/**
+ * DELETE WORKSPACE
+ */
+export const deleteWorkspace = asyncHandler(async (req, res) => {
   await deleteWorkspaceService(req.params.workspaceId);
   res.status(HTTPSTATUS.NO_CONTENT).send();
-};
+});
 
-export const inviteMember = async (req, res) => {
+/**
+ * INVITE MEMBER
+ */
+export const inviteMember = asyncHandler(async (req, res) => {
   const member = await inviteMemberService({
     workspaceId: req.params.workspaceId,
     email: req.body.email,
@@ -57,14 +76,20 @@ export const inviteMember = async (req, res) => {
   });
 
   res.status(HTTPSTATUS.CREATED).json(member);
-};
+});
 
-export const getWorkspaceMembers = async (req, res) => {
+/**
+ * GET WORKSPACE MEMBERS
+ */
+export const getWorkspaceMembers = asyncHandler(async (req, res) => {
   const members = await getWorkspaceMembersService(req.params.workspaceId);
   res.status(HTTPSTATUS.OK).json(members);
-};
+});
 
-export const updateMemberRole = async (req, res) => {
+/**
+ * UPDATE MEMBER ROLE
+ */
+export const updateMemberRole = asyncHandler(async (req, res) => {
   const member = await updateMemberRoleService({
     workspaceId: req.params.workspaceId,
     memberId: req.params.memberId,
@@ -72,37 +97,37 @@ export const updateMemberRole = async (req, res) => {
   });
 
   res.status(HTTPSTATUS.OK).json(member);
-};
+});
 
-export const removeMember = async (req, res) => {
+/**
+ * REMOVE MEMBER
+ */
+export const removeMember = asyncHandler(async (req, res) => {
   await removeMemberService({
     workspaceId: req.params.workspaceId,
     memberId: req.params.memberId,
   });
 
   res.status(HTTPSTATUS.NO_CONTENT).send();
-};
+});
 
 /**
- * GET /api/workspaces/:workspaceId
+ * GET WORKSPACE BY ID
  * Workspace detail with members & roles
  */
-export const getWorkspaceById = async (req, res) => {
-  const data = await getWorkspaceByIdService(
-    req.params.workspaceId
-  );
-
+export const getWorkspaceById = asyncHandler(async (req, res) => {
+  const data = await getWorkspaceByIdService(req.params.workspaceId);
   res.status(HTTPSTATUS.OK).json(data);
-};
+});
 
 /**
- * GET /api/workspaces/:workspaceId/analytics
+ * GET WORKSPACE ANALYTICS
  * Workspace dashboard analytics
  */
-export const getWorkspaceAnalytics = async (req, res) => {
+export const getWorkspaceAnalytics = asyncHandler(async (req, res) => {
   const analytics = await getWorkspaceAnalyticsService(
     req.params.workspaceId
   );
 
   res.status(HTTPSTATUS.OK).json(analytics);
-};
+});

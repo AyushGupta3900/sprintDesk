@@ -20,7 +20,17 @@ app.use(
     crossOriginResourcePolicy: false,
   })
 );
-app.use(cors());
+
+const allowedOrigins = [
+  "http://localhost:5173",
+];
+
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true,
+  })
+);
 
 // body parsing
 app.use(express.json());

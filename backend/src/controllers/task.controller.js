@@ -1,3 +1,4 @@
+import { asyncHandler } from "../utils/async-handler.js";
 import { HTTPSTATUS } from "../constants/http-status.js";
 import {
   createTaskService,
@@ -10,7 +11,7 @@ import {
 /**
  * CREATE TASK
  */
-export const createTaskController = async (req, res) => {
+export const createTaskController = asyncHandler(async (req, res) => {
   const { title, description, priority, assignedTo, dueDate } = req.body;
   const { projectId, workspaceId } = req.params;
 
@@ -26,12 +27,12 @@ export const createTaskController = async (req, res) => {
   });
 
   res.status(HTTPSTATUS.CREATED).json(task);
-};
+});
 
 /**
  * UPDATE TASK
  */
-export const updateTaskController = async (req, res) => {
+export const updateTaskController = asyncHandler(async (req, res) => {
   const { id, projectId, workspaceId } = req.params;
   const updates = req.body;
 
@@ -43,12 +44,12 @@ export const updateTaskController = async (req, res) => {
   });
 
   res.status(HTTPSTATUS.OK).json(task);
-};
+});
 
 /**
  * DELETE TASK
  */
-export const deleteTaskController = async (req, res) => {
+export const deleteTaskController = asyncHandler(async (req, res) => {
   const { id, workspaceId } = req.params;
 
   await deleteTaskService({
@@ -57,23 +58,22 @@ export const deleteTaskController = async (req, res) => {
   });
 
   res.status(HTTPSTATUS.NO_CONTENT).send();
-};
+});
 
 /**
- * GET ALL TASKS (WORKSPACE)
+ * GET ALL TASKS
  */
-export const getAllTasksController = async (req, res) => {
+export const getAllTasksController = asyncHandler(async (req, res) => {
   const { workspaceId } = req.params;
 
   const tasks = await getAllTasksService(workspaceId);
-
   res.status(HTTPSTATUS.OK).json(tasks);
-};
+});
 
 /**
  * GET TASK BY ID
  */
-export const getTaskByIdController = async (req, res) => {
+export const getTaskByIdController = asyncHandler(async (req, res) => {
   const { id, projectId, workspaceId } = req.params;
 
   const task = await getTaskByIdService({
@@ -83,4 +83,4 @@ export const getTaskByIdController = async (req, res) => {
   });
 
   res.status(HTTPSTATUS.OK).json(task);
-};
+});

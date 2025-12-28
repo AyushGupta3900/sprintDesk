@@ -3,6 +3,7 @@ import Member from "../models/member.model.js";
 import Role from "../models/role.model.js";
 import User from "../models/user.model.js";
 import Task from "../models/task.model.js";
+import Project from "../models/project.model.js";
 
 import { Roles } from "../enums/role.enum.js";
 import { HTTPSTATUS } from "../constants/http-status.js";
@@ -175,13 +176,12 @@ export const deleteWorkspaceService = async (workspaceId) => {
   await Promise.all([
     Member.deleteMany({ workspaceId }),
     Role.deleteMany({ workspaceId }),
+    Project.deleteMany({ workspace: workspaceId }),
+    Task.deleteMany({ workspace: workspaceId }),
     Workspace.findByIdAndDelete(workspaceId),
   ]);
 
-  // 🔥 Cache cleanup
-  await deleteCache(
-    `workspace:${workspaceId}:members`
-  );
+  await deleteCache(`workspace:${workspaceId}:members`);
 };
 
 /**
